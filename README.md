@@ -38,6 +38,8 @@ npm run dev                      # API :4000 + web :5173
 
 ## Deploying
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vectobest/campusflow)
+
 One Render web service (API + web app, HTTPS) and a free MongoDB Atlas database; `render.yaml` is included. Step by step: [docs/DEPLOY.md](docs/DEPLOY.md). GitHub Actions runs every test suite on each push.
 
 ## The presentation story

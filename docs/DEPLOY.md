@@ -23,7 +23,7 @@ Both services have free tiers. You need a GitHub account (repository pushed), a 
 ## 2. App: Render (≈5 min)
 
 1. Sign up at https://render.com with **"Sign in with GitHub"**.
-2. **New → Blueprint** → select the `campusflow` repository. Render reads [render.yaml](../render.yaml).
+2. Open **https://render.com/deploy?repo=https://github.com/vectobest/campusflow** (or the README's *Deploy to Render* button, or **New → Blueprint** → the repository). Render reads [render.yaml](../render.yaml).
 3. Fill in the values it asks for:
    | Key | Value |
    |---|---|
