@@ -1,0 +1,25 @@
+{
+  "name": "campusflow",
+  "private": true,
+  "description": "CampusFlow \u2014 campus mobility analytics and trajectory mining platform",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "test": "npm test -w server && npm test -w client && npm run test:analytics",
+    "build": "npm run build -w client",
+    "seed": "npm run seed -w server --",
+    "dev:https": "npm run dev:https -w client",
+    "setup:analytics": "python3 -m venv analytics/.venv && analytics/.venv/bin/pip install -r analytics/requirements.txt",
+    "analyze": "PYTHONPATH=analytics analytics/.venv/bin/python -m campusflow",
+    "test:analytics": "cd analytics && .venv/bin/python -m pytest -q"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

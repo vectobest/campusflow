@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "name": "NIT Raipur campus places — fill with VERIFIED coordinates only",
+  "_instructions": "Copy to nitrr_places.geojson. Add one Point per place, using coordinates checked on the ground (e.g. stand at the entrance and read your phone's GPS several times) or from an authoritative campus map. Set verificationStatus to 'verified' or 'approximate'. Never guess. Unmatched stay regions are shown as 'Unidentified region'.",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [0, 0] },
+      "properties": {
+        "placeId": "EXAMPLE_LIBRARY",
+        "name": "Central Library (example — replace coordinates)",
+        "category": "library",
+        "dataSource": "who measured it, how, and when",
+        "verificationStatus": "unverified"
+      }
+    }
+  ]
+}

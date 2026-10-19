@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+/*
+ * Minimalist Dark design tokens.
+ * Semantic names are kept from the original theme so every component picks the
+ * new values up from here:
+ *   paper    = background (deepest layer)    surface  = backgroundAlt
+ *   elevated = muted / solid card            card     = glass card
+ *   ink      = foreground                    muted / faint = secondary text
+ *   brand / accent = amber                   line / line-strong = borders
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-paper: #0a0a0f;
+  --color-surface: #12121a;
+  --color-elevated: #1a1a24;
+  --color-card: rgb(26 26 36 / 0.6);
+  --color-ink: #fafafa;
+  /* zinc-400 / zinc-450: the spec's #71717A is 3.6:1 on cards, below WCAG AA for small text */
+  --color-muted: #a1a1aa;
+  --color-faint: #8b8b94;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.15);
+
+  --color-brand: #f59e0b;
+  --color-brand-fg: #0a0a0f;
+  --color-brand-soft: rgb(245 158 11 / 0.12);
+  --color-accent: #f59e0b;
+
+  /* Status colours: reserved for state, always paired with an icon or label */
+  --color-rec: #f87171;
+  --color-rec-soft: rgb(248 113 113 / 0.12);
+  --color-warn: #fdba74;
+  --color-warn-soft: rgb(253 186 116 / 0.1);
+  --color-ok: #6ee7b7;
+  --color-ok-soft: rgb(110 231 183 / 0.1);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  --shadow-glow-sm: 0 0 20px rgb(245 158 11 / 0.15);
+  --shadow-glow-md: 0 0 40px rgb(245 158 11 / 0.2);
+  --shadow-glow-btn: 0 0 20px rgb(245 158 11 / 0.4);
+  --shadow-border-glow: 0 0 0 1px rgb(245 158 11 / 0.3), 0 0 20px rgb(245 158 11 / 0.15);
+  --shadow-lift: 0 10px 15px rgb(0 0 0 / 0.3);
+
+  --animate-fade-up: fade-up 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-draw: draw 3.2s ease-out both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes draw {
+  from { stroke-dashoffset: var(--len, 1200); }
+  to { stroke-dashoffset: 0; }
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-paper);
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+  ::selection {
+    background: rgb(245 158 11 / 0.3);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Glass card: semi-transparent layer floating over the ambient background */
+  .glass {
+    background: var(--color-card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--color-line);
+  }
+  .glass-hover {
+    transition: transform 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out;
+  }
+  .glass-hover:hover {
+    background: rgb(26 26 36 / 0.8);
+    border-color: var(--color-line-strong);
+    box-shadow: var(--shadow-lift);
+    transform: scale(1.02);
+  }
+  .glow-line {
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    box-shadow: var(--shadow-glow-sm);
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .text-gradient {
+    background: linear-gradient(180deg, #fafafa 30%, #a1a1aa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Recording / live indicators */
+@keyframes rec-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(248 113 113 / 0.55); }
+  70% { box-shadow: 0 0 0 14px rgb(248 113 113 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(248 113 113 / 0); }
+}
+.rec-dot { animation: rec-pulse 1.8s infinite; }
+
+@keyframes amber-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(245 158 11 / 0.6), 0 0 12px rgb(245 158 11 / 0.6); }
+  50% { box-shadow: 0 0 0 6px rgb(245 158 11 / 0), 0 0 18px rgb(245 158 11 / 0.8); }
+}
+.live-dot { animation: amber-pulse 2s ease-in-out infinite; }
+
+@keyframes ring-expand {
+  from { transform: scale(0.6); opacity: 0.7; }
+  to { transform: scale(1.8); opacity: 0; }
+}
+.ring-expand { animation: ring-expand 2.4s ease-out infinite; }
+
+/* Leaflet, restyled for the dark theme. Doubled selector: leaflet.css is loaded
+   lazily (after this file) and would otherwise reset the background to light grey. */
+.leaflet-container.leaflet-container {
+  background: var(--color-surface);
+  font-family: var(--font-sans);
+}
+.leaflet-tooltip {
+  background: rgb(18 18 26 / 0.95);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 15px rgb(0 0 0 / 0.4);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.leaflet-tooltip-top::before { border-top-color: rgb(18 18 26 / 0.95); }
+.leaflet-tooltip-bottom::before { border-bottom-color: rgb(18 18 26 / 0.95); }
+.leaflet-tooltip-left::before { border-left-color: rgb(18 18 26 / 0.95); }
+.leaflet-tooltip-right::before { border-right-color: rgb(18 18 26 / 0.95); }
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--color-elevated);
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+}
+.leaflet-bar {
+  border: 1px solid var(--color-line-strong) !important;
+}
+.leaflet-control-attribution {
+  background: rgb(10 10 15 / 0.7) !important;
+  color: var(--color-faint);
+}
+.leaflet-control-attribution a { color: var(--color-muted); }
+
+input[type="range"] { accent-color: var(--color-accent); }
+input[type="checkbox"] { accent-color: var(--color-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
