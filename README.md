@@ -18,7 +18,7 @@ phone browser ──► Node API (Express + MongoDB) ──► Python analysis (
 | [client/](client/) | React + Vite + Tailwind: consent, collection, My data, **Analytics** dashboard, Datasets |
 | [server/](server/) | Express 5 + Mongoose: auth, consent, sessions, ingestion, deletion, retention, analysis results API |
 | [analytics/](analytics/) | Python pipeline: methods, parameters and limitations are in [analytics/README.md](analytics/README.md) |
-| [docs/](docs/) | [Architecture](docs/ARCHITECTURE.md) · [Data model](docs/DATA_MODEL.md) · [Privacy](docs/PRIVACY.md) · [API](docs/API.md) |
+| [docs/](docs/) | [Architecture](docs/ARCHITECTURE.md) · [Data model](docs/DATA_MODEL.md) · [Privacy](docs/PRIVACY.md) · [API](docs/API.md) · **[Deploy](docs/DEPLOY.md)** |
 
 ## Quick start
 
@@ -35,6 +35,10 @@ npm run dev                      # API :4000 + web :5173
 3. **Analyse.** Run `npm run analyze -- --dataset nitrr-campus-collected --places analytics/places/nitrr_places.geojson`, then open **Analytics**.
 
 **Demo without real data:** `npm run seed -- --csv` then `npm run analyze -- --dataset synthetic-dev --places data/synthetic/synthetic_places.geojson`. The dashboard shows it on a blank background, marked SYNTHETIC.
+
+## Deploying
+
+One Render web service (API + web app, HTTPS) and a free MongoDB Atlas database; `render.yaml` is included. Step by step: [docs/DEPLOY.md](docs/DEPLOY.md). GitHub Actions runs every test suite on each push.
 
 ## The presentation story
 

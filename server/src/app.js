@@ -1,3 +1,4 @@
+import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
@@ -29,10 +30,25 @@ function limiter(windowMs, limit, { perToken = false } = {}) {
   });
 }
 
-export function createApp() {
+// Only this origin, plus the fonts and dark map tiles the web app actually loads.
+const contentSecurityPolicy = {
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+    imgSrc: ["'self'", 'data:', 'https://*.basemaps.cartocdn.com'],
+    connectSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    frameAncestors: ["'none'"],
+    baseUri: ["'self'"],
+  },
+};
+
+export function createApp({ clientDist = config.clientDist } = {}) {
   const app = express();
   app.set('trust proxy', config.nodeEnv === 'production' ? 1 : false);
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy }));
   app.use(cors({ origin: config.corsOrigins }));
   app.use(express.json({ limit: '1mb' }));
   if (config.nodeEnv === 'development') app.use(morgan('dev'));
@@ -69,6 +85,17 @@ export function createApp() {
   api.use('/stats', statsRoutes);
 
   app.use('/api/v1', api);
+
+  if (clientDist) {
+    // Hashed assets can be cached forever; index.html must always be revalidated.
+    app.use(express.static(clientDist, { index: false, maxAge: '1y', immutable: true }));
+    app.use((req, res, next) => {
+      if (req.method !== 'GET' || req.path.startsWith('/api/')) return next();
+      res.set('Cache-Control', 'no-cache');
+      return res.sendFile(path.join(clientDist, 'index.html'));
+    });
+  }
+
   app.use(notFound);
   app.use(errorHandler);
   return app;

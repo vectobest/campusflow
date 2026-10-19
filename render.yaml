@@ -1,0 +1,30 @@
+# Render Blueprint: one web service that runs the API and serves the built web app.
+# Deploy: Render dashboard → New → Blueprint → pick this repository.
+# See docs/DEPLOY.md for the MongoDB Atlas setup and the values to paste in.
+services:
+  - type: web
+    name: campusflow
+    runtime: node
+    region: singapore        # closest Render region to Raipur
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    autoDeploy: true         # redeploy on every push to main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true  # Render creates a strong random secret
+      - key: MONGODB_URI
+        sync: false          # paste your MongoDB Atlas connection string
+      - key: STUDY_CONTACT
+        sync: false
+      - key: ETHICS_APPROVAL_REF
+        sync: false
+      - key: MIN_AGGREGATE_PARTICIPANTS
+        value: "3"
+      - key: RETENTION_DAYS
+        value: "365"

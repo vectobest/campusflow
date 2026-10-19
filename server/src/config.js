@@ -1,4 +1,7 @@
 import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function num(name, fallback) {
   const raw = process.env[name];
@@ -26,6 +29,10 @@ function parseBbox(raw) {
 }
 
 const nodeEnv = process.env.NODE_ENV || 'development';
+
+// In production the API also serves the built web app (one service, one HTTPS origin).
+const defaultClientDist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../client/dist');
+const clientDist = process.env.CLIENT_DIST || (nodeEnv === 'production' ? defaultClientDist : null);
 const jwtSecret = process.env.JWT_SECRET || (nodeEnv === 'production' ? null : 'dev-only-insecure-secret');
 if (!jwtSecret) throw new Error('JWT_SECRET is required in production');
 
@@ -35,6 +42,7 @@ export const config = {
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/campusflow',
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  clientDist: clientDist && fs.existsSync(path.join(clientDist, 'index.html')) ? clientDist : null,
   corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map((s) => s.trim()).filter(Boolean),
 
   collection: {
