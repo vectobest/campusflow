@@ -86,6 +86,7 @@ A detailed description of each method, including its assumptions and computation
 Responsibilities are separated as follows:
 
 - **Web application.** Obtains informed consent and records location only while a session is active. Observations are queued on the device and uploaded in batches with retry, so temporary network loss does not lose data.
+- **Authentication.** Users sign in with email and password, or with **Google OAuth 2.0** (Google Identity Services). The Google ID token is verified on the server against the configured client ID before CampusFlow issues its own session token.
 - **REST API.** Enforces consent and session ownership, validates every observation, and stores observations idempotently on the key (session, sequence number), so retried uploads never create duplicates. It also handles data deletion and the retention policy.
 - **Analysis pipeline.** Reads finished sessions, computes the results described in Section 2, applies privacy suppression, and stores a single aggregate result for the dashboard.
 
@@ -96,7 +97,7 @@ Further detail, including data-flow and state diagrams, is available in [docs/AR
 | Layer | Technologies |
 |---|---|
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router, React Leaflet, Recharts, Lucide icons |
-| Backend | Node.js, Express 5, MongoDB, Mongoose 9, JSON Web Tokens, Zod, Helmet, express-rate-limit |
+| Backend | Node.js, Express 5, MongoDB, Mongoose 9, JSON Web Tokens, Google OAuth 2.0 / OpenID Connect (google-auth-library), Zod, Helmet, express-rate-limit |
 | Analysis | Python 3, pandas, NumPy, scikit-learn, PyMongo |
 | Testing | Node test runner with Supertest, Vitest, pytest |
 | Infrastructure | Vercel (frontend), Render (API), MongoDB Atlas (database), GitHub Actions (continuous integration) |
@@ -147,6 +148,10 @@ npm run dev
 
 This starts the API at `http://localhost:4000` and the web application at `http://localhost:5173`. Browsers expose GPS only to secure origins. To test on a mobile device over the local network, run `npm run dev:https` and open the network address it prints.
 
+### Enabling Sign in with Google (optional)
+
+Create an OAuth 2.0 *Web application* client in Google Cloud Console, and add the application's address under **Authorized JavaScript origins**. Then set `GOOGLE_CLIENT_ID` in `server/.env`, or in the API's environment when deployed. Setting `GOOGLE_ALLOWED_DOMAINS=nitrr.ac.in` restricts sign-in to institute accounts. Detailed steps are given in [docs/DEPLOY.md](docs/DEPLOY.md#optional-sign-in-with-google).
+
 ### Granting researcher access
 
 Analytics and dataset pages are restricted to researchers. After registering an account, grant the role with:
@@ -194,7 +199,7 @@ npm test
 
 | Suite | Framework | Tests | Coverage |
 |---|---|---|---|
-| Server | Node test runner, Supertest | 74 | Consent enforcement, session lifecycle, observation validation, idempotent ingestion, ownership isolation, deletion, retention, dataset versioning, access control, static serving, database-unavailable behaviour |
+| Server | Node test runner, Supertest | 82 | Google sign-in (account creation, linking, token rejection, domain restriction), consent enforcement, session lifecycle, observation validation, idempotent ingestion, ownership isolation, deletion, retention, dataset versioning, access control, static serving, database-unavailable behaviour |
 | Client | Vitest | 26 | Sampling throttle, observation mapping, offline queue and retry, duplicate-safe resubmission, session restoration, live distance estimation, API address resolution |
 | Analysis | pytest | 61 | Cleaning, stay points, stay regions, zones, paths, PrefixSpan (including brute-force cross-checks), clustering, privacy suppression, end-to-end reproducibility |
 

@@ -76,6 +76,8 @@ async function call(method, url, data, params) {
 export const api = {
   register: (email, password) => call('post', '/auth/register', { email, password }),
   login: (email, password) => call('post', '/auth/login', { email, password }),
+  googleSignIn: (credential) => call('post', '/auth/google', { credential }),
+  authConfig: () => call('get', '/config/auth'),
   me: () => call('get', '/auth/me'),
   deleteAccount: () => call('delete', '/auth/me'),
 

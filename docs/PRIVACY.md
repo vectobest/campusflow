@@ -11,6 +11,7 @@ CampusFlow studies **aggregate** movement. These controls are enforced in code; 
 | Visible indicator | Full-width banner on every page plus tab title `● Recording` | `components/Layout.jsx` |
 | No background-tracking promises | UI and consent explain that browsers may stop updates when the screen locks; background gaps are detected and reported to the participant | `CollectorPanel.jsx` |
 | Data minimisation | No user-agent, device IDs, or IP stored with data; device metadata is just `mobile/desktop`; optional `STUDY_AREA_BBOX` rejects off-campus points before storage | `CollectionSession.js`, `observationValidation.js` |
+| Sign in with Google | Only the verified email and Google's account ID (`sub`) are stored. No Google profile, contacts or tokens are kept; the ID token is verified and discarded | `routes/auth.js`, `services/google.js` |
 | Identity separation | Email only in `User`; research data keyed by random `participantId`; `internalUserId` never returned by any endpoint | `Participant.js` |
 | Raw-trace access | Only the owner can read a session's observations (non-owners get 404, including researchers). Researchers see aggregate dataset summaries | `routes/collection.js`, `routes/datasets.js` |
 | Deletion | Per session, all sessions, account deletion; dataset versions referencing deleted data are invalidated | `services/deletion.js` |

@@ -34,21 +34,26 @@ function limiter(windowMs, limit, { perToken = false } = {}) {
 const contentSecurityPolicy = {
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    // accounts.google.com/gsi: "Sign in with Google" (Google Identity Services)
+    scriptSrc: ["'self'", 'https://accounts.google.com/gsi/client'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://accounts.google.com/gsi/style'],
+    frameSrc: ['https://accounts.google.com/gsi/'],
     fontSrc: ["'self'", 'https://fonts.gstatic.com'],
     imgSrc: ["'self'", 'data:', 'https://*.basemaps.cartocdn.com'],
-    connectSrc: ["'self'"],
+    connectSrc: ["'self'", 'https://accounts.google.com/gsi/'],
     objectSrc: ["'none'"],
     frameAncestors: ["'none'"],
     baseUri: ["'self'"],
   },
 };
 
-export function createApp({ clientDist = config.clientDist } = {}) {
+export function createApp({ clientDist = config.clientDist, googleVerifier = null } = {}) {
   const app = express();
+  // Tests inject a fake Google token verifier here.
+  if (googleVerifier) app.locals.googleVerifier = googleVerifier;
   app.set('trust proxy', config.nodeEnv === 'production' ? 1 : false);
-  app.use(helmet({ contentSecurityPolicy }));
+  // same-origin-allow-popups: Google's sign-in popup must be able to report back.
+  app.use(helmet({ contentSecurityPolicy, crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' } }));
   app.use(cors({ origin: config.corsOrigins }));
   app.use(express.json({ limit: '1mb' }));
   if (config.nodeEnv === 'development') app.use(morgan('dev'));
@@ -58,6 +63,11 @@ export function createApp({ clientDist = config.clientDist } = {}) {
 
   api.get('/health', (req, res) => {
     res.json({ data: { status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' } });
+  });
+
+  // Public sign-in options. The Google client ID is public by design (it is embedded in the page).
+  api.get('/config/auth', (req, res) => {
+    res.json({ data: { googleClientId: config.google.clientId, googleAllowedDomains: config.google.allowedDomains } });
   });
 
   // Public, non-sensitive collection settings so the client never hard-codes them.

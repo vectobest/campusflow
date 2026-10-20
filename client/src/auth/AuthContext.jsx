@@ -35,6 +35,7 @@ export function AuthProvider({ children }) {
       refresh,
       login: async (email, password) => establish((await api.login(email, password)).data),
       register: async (email, password) => establish((await api.register(email, password)).data),
+      loginWithGoogle: async (credential) => establish((await api.googleSignIn(credential)).data),
       logout: () => {
         tokenStore.clear()
         setState({ loading: false, user: null, participant: null })

@@ -31,6 +31,10 @@ services:
         sync: false
       - key: ETHICS_APPROVAL_REF
         sync: false
+      - key: GOOGLE_CLIENT_ID       # OAuth 2.0 Web client ID (public); empty = Google sign-in hidden
+        sync: false
+      - key: GOOGLE_ALLOWED_DOMAINS # optional, e.g. nitrr.ac.in
+        sync: false
       - key: MIN_AGGREGATE_PARTICIPANTS
         value: "3"
       - key: RETENTION_DAYS
@@ -57,13 +61,16 @@ services:
     headers:
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com; connect-src 'self' https://*.onrender.com https://*.vercel.app; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+        value: "default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com; frame-src https://accounts.google.com/gsi/; connect-src 'self' https://*.onrender.com https://*.vercel.app https://accounts.google.com/gsi/; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
       - path: /*
         name: Referrer-Policy
         value: strict-origin-when-cross-origin
       - path: /*
         name: X-Content-Type-Options
         value: nosniff
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin-allow-popups
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=31536000, immutable

@@ -10,13 +10,15 @@ Authenticated routes need `Authorization: Bearer <jwt>`.
 | GET | `/health` | `{ status, db }` |
 | GET | `/config/collection` | sampling-interval range/default, batch size, consent version, retention days, suppression threshold, whether a study area is configured |
 | GET | `/consent/current` | current consent document |
+| GET | `/config/auth` | `{ googleClientId, googleAllowedDomains }`: the public Google client ID (null hides the Google button) |
 
 ## Auth
 
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | POST | `/auth/register` | `{ email, password(≥10) }` | creates User + Participant (`p_<uuid>`) → `{ token, user, participant }` |
-| POST | `/auth/login` | `{ email, password }` | identical 401 for unknown email / wrong password |
+| POST | `/auth/login` | `{ email, password }` | identical 401 for unknown email / wrong password / Google-only account |
+| POST | `/auth/google` | `{ credential }` | Sign in with Google: `credential` is the ID token from Google Identity Services. Verified server-side (signature, audience = `GOOGLE_CLIENT_ID`, issuer, expiry, `email_verified`, optional `GOOGLE_ALLOWED_DOMAINS`). Creates the account on first use (201), links an existing account with the same email, otherwise signs in (200). 503 `google_not_configured` when no client ID is set. |
 | GET | `/auth/me` | | `{ user, participant }` |
 | DELETE | `/auth/me` | | deletes account, participant, all sessions |
 

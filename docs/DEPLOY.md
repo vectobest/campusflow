@@ -47,6 +47,14 @@ Deploy only `campusflow-api` on Render. Then on Vercel, import the repo with **R
 
 **Free-tier note:** the API sleeps after 15 minutes idle, and the first request then takes about a minute. Open the site once before a session or demo. Points recorded meanwhile wait on the phone and upload automatically.
 
+## Optional: Sign in with Google
+
+1. In **Google Cloud Console**, open **APIs & Services → OAuth consent screen**. Choose *External*, enter the app name **CampusFlow** and your support email, then publish.
+2. Open **APIs & Services → Credentials → Create credentials → OAuth client ID**. Choose **Web application**.
+3. Under **Authorized JavaScript origins**, add the website's address, e.g. `https://campusflow-web-ten.vercel.app`, and `http://localhost:5173` for development. No redirect URI is needed: the popup flow returns an ID token directly.
+4. Copy the **Client ID** (`….apps.googleusercontent.com`). It is public, not a secret, and no client secret is used.
+5. On the API service, set `GOOGLE_CLIENT_ID` to that value. Optionally set `GOOGLE_ALLOWED_DOMAINS=nitrr.ac.in` to accept only institute accounts. Then redeploy the API. The website reads the client ID from `/api/v1/config/auth`, so it does not need rebuilding.
+
 ## 3. Make yourself a researcher
 
 Register on the live site, then from your laptop:

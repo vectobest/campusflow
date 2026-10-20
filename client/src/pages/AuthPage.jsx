@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import GoogleSignInButton from '../components/GoogleSignInButton'
 import { Alert, Button, Card, Field, PageHeader, inputClass } from '../components/ui'
 import { collector } from '../hooks/useCollector'
 
 export default function AuthPage({ mode }) {
-  const { login, register } = useAuth()
+  const { login, register, loginWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const next = params.get('next')?.startsWith('/') ? params.get('next') : '/contribute'
@@ -15,12 +16,11 @@ export default function AuthPage({ mode }) {
   const [busy, setBusy] = useState(false)
   const isRegister = mode === 'register'
 
-  const submit = async (e) => {
-    e.preventDefault()
+  const signIn = async (action) => {
     setBusy(true)
     setError(null)
     try {
-      await (isRegister ? register : login)(email, password)
+      await action()
       // Resume any upload that stopped because the previous sign-in expired.
       if (collector.getSnapshot().fatal?.code === 'unauthenticated') collector.clearFatal()
       navigate(next, { replace: true })
@@ -31,6 +31,11 @@ export default function AuthPage({ mode }) {
     }
   }
 
+  const submit = (e) => {
+    e.preventDefault()
+    signIn(() => (isRegister ? register : login)(email, password))
+  }
+
   return (
     <div className="mx-auto max-w-md">
       <PageHeader eyebrow="CampusFlow" title={isRegister ? 'Create your account' : 'Sign in'}>
@@ -39,6 +44,7 @@ export default function AuthPage({ mode }) {
           : 'Sign in to contribute or to manage your data.'}
       </PageHeader>
       <Card>
+        <GoogleSignInButton text={isRegister ? 'signup_with' : 'signin_with'} onCredential={(credential) => signIn(() => loginWithGoogle(credential))} />
         <form onSubmit={submit} className="space-y-4">
           <Field label="Email">
             <input className={inputClass} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />

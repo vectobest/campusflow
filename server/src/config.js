@@ -86,6 +86,13 @@ export const config = {
     collectionPerMinutePerUser: num('RATE_LIMIT_COLLECTION_PER_MINUTE', 120),
   },
 
+  google: {
+    // OAuth 2.0 Web client ID from Google Cloud Console. Not a secret; unset = Google sign-in hidden.
+    clientId: process.env.GOOGLE_CLIENT_ID || null,
+    // Optional: only accept Google Workspace accounts from these domains, e.g. "nitrr.ac.in".
+    allowedDomains: (process.env.GOOGLE_ALLOWED_DOMAINS || '').split(',').map((d) => d.trim().toLowerCase()).filter(Boolean),
+  },
+
   consent: {
     currentVersion: process.env.CONSENT_VERSION || '1.0',
   },

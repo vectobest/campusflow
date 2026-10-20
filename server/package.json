@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "NODE_ENV=test MONGODB_URI=mongodb://127.0.0.1:27017/campusflow_test node --test --test-concurrency=1 'test/**/*.test.js'",
+    "test": "NODE_ENV=test MONGODB_URI=mongodb://127.0.0.1:27017/campusflow_test GOOGLE_CLIENT_ID=test-client.apps.googleusercontent.com node --test --test-concurrency=1 'test/**/*.test.js'",
     "seed": "node scripts/seed-synthetic.js",
     "set-role": "node scripts/set-role.js",
     "retention": "node scripts/retention.js",
@@ -22,6 +22,7 @@
     "dotenv": "^18.0.8",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
+    "google-auth-library": "^11.3.1",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.11.2",
