@@ -77,6 +77,14 @@ export function createApp({ clientDist = config.clientDist } = {}) {
     });
   });
 
+  // Data routes need MongoDB; while it is unreachable they fail fast with a clear 503
+  // (the collector treats that as "retry later" and keeps points on the device).
+  api.use(['/auth', '/consent', '/collection', '/datasets', '/analytics', '/stats'], (req, res, next) =>
+    mongoose.connection.readyState === 1
+      ? next()
+      : res.status(503).json({ error: { code: 'db_unavailable', message: 'The database is unavailable. Please try again shortly.' } }),
+  );
+
   api.use('/auth', limiter(15 * 60_000, config.rateLimits.authPer15MinPerIp), authRoutes);
   api.use('/consent', consentRoutes);
   api.use('/collection', limiter(60_000, config.rateLimits.collectionPerMinutePerUser, { perToken: true }), collectionRoutes);

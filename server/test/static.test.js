@@ -53,3 +53,22 @@ describe('CORS origin parsing', async () => {
     assert.deepEqual(parseOrigins(''), []);
   });
 });
+
+describe('without a database connection', () => {
+  const app = createApp({ clientDist: null });
+  it('still answers health and config', async () => {
+    const health = await request(app).get('/api/v1/health');
+    assert.equal(health.status, 200);
+    assert.equal(health.body.data.db, 'disconnected');
+    assert.equal((await request(app).get('/api/v1/config/collection')).status, 200);
+  });
+  it('returns 503 db_unavailable for data routes', async () => {
+    for (const p of ['/api/v1/stats/public', '/api/v1/consent/current']) {
+      const res = await request(app).get(p);
+      assert.equal(res.status, 503);
+      assert.equal(res.body.error.code, 'db_unavailable');
+    }
+    const login = await request(app).post('/api/v1/auth/login').send({ email: 'a@b.test', password: 'xxxxxxxxxx' });
+    assert.equal(login.status, 503);
+  });
+});

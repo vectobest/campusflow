@@ -13,3 +13,4 @@ data/raw/
 data/processed/
 data/synthetic/
 analytics/output/
+.vercel/
