@@ -28,6 +28,19 @@ function parseBbox(raw) {
   return { minLon, minLat, maxLon, maxLat };
 }
 
+/**
+ * Allowed browser origins for the API, comma-separated. Bare hostnames get
+ * https:// (Render passes the frontend's host without a scheme); trailing
+ * slashes are removed because browsers never send them in Origin.
+ */
+export function parseOrigins(raw) {
+  return (raw || '')
+    .split(',')
+    .map((s) => s.trim().replace(/\/+$/, ''))
+    .filter(Boolean)
+    .map((s) => (s.includes('://') ? s : `https://${s}`));
+}
+
 const nodeEnv = process.env.NODE_ENV || 'development';
 
 // In production the API also serves the built web app (one service, one HTTPS origin).
@@ -43,7 +56,7 @@ export const config = {
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientDist: clientDist && fs.existsSync(path.join(clientDist, 'index.html')) ? clientDist : null,
-  corsOrigins: (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',').map((s) => s.trim()).filter(Boolean),
+  corsOrigins: parseOrigins(process.env.CORS_ORIGINS || 'http://localhost:5173'),
 
   collection: {
     // Dataset that participant-contributed sessions are written to.

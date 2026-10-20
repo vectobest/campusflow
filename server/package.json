@@ -12,7 +12,8 @@
     "test": "NODE_ENV=test MONGODB_URI=mongodb://127.0.0.1:27017/campusflow_test node --test --test-concurrency=1 'test/**/*.test.js'",
     "seed": "node scripts/seed-synthetic.js",
     "set-role": "node scripts/set-role.js",
-    "retention": "node scripts/retention.js"
+    "retention": "node scripts/retention.js",
+    "db:check": "node scripts/db-check.js"
   },
   "type": "module",
   "dependencies": {

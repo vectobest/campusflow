@@ -1,25 +1,32 @@
-# Render Blueprint: one web service that runs the API and serves the built web app.
-# Deploy: Render dashboard → New → Blueprint → pick this repository.
-# See docs/DEPLOY.md for the MongoDB Atlas setup and the values to paste in.
+# Render Blueprint: backend and frontend deployed as two separate services.
+#   campusflow-api  Node/Express API  (needs MONGODB_URI)
+#   campusflow-web  static React site (built with the API's address)
+# Each service is told the other's address automatically via fromService.
+# Deploy: https://render.com/deploy?repo=https://github.com/vectobest/campusflow
 services:
   - type: web
-    name: campusflow
+    name: campusflow-api
     runtime: node
-    region: singapore        # closest Render region to Raipur
+    region: singapore              # closest Render region to Raipur
     plan: free
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: npm ci --workspace server --include-workspace-root
     startCommand: npm start
     healthCheckPath: /api/v1/health
-    autoDeploy: true         # redeploy on every push to main
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_VERSION
         value: "22"
       - key: JWT_SECRET
-        generateValue: true  # Render creates a strong random secret
+        generateValue: true        # strong random secret, created by Render
       - key: MONGODB_URI
-        sync: false          # paste your MongoDB Atlas connection string
+        sync: false                # paste your MongoDB Atlas connection string
+      - key: CORS_ORIGINS          # only the frontend may call the API from a browser
+        fromService:
+          type: web
+          name: campusflow-web
+          property: host
       - key: STUDY_CONTACT
         sync: false
       - key: ETHICS_APPROVAL_REF
@@ -28,3 +35,35 @@ services:
         value: "3"
       - key: RETENTION_DAYS
         value: "365"
+
+  - type: web
+    name: campusflow-web
+    runtime: static
+    buildCommand: npm ci --include=dev && npm run build
+    staticPublishPath: client/dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_HOST         # baked into the build: https://<host>/api/v1
+        fromService:
+          type: web
+          name: campusflow-api
+          property: host
+    routes:
+      - type: rewrite              # client-side routing: every path serves the app
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.basemaps.cartocdn.com; connect-src 'self' https://*.onrender.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'"
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

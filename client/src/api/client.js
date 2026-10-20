@@ -16,8 +16,19 @@ export const tokenStore = {
   clear: () => safeStorage(() => localStorage.removeItem(TOKEN_KEY)),
 }
 
+/**
+ * Where the API lives. Development: same origin, proxied by Vite.
+ * Separate deployments: set VITE_API_BASE_URL (full URL, e.g. https://api.example.com/api/v1)
+ * or VITE_API_HOST (hostname only, as Render's blueprint provides it).
+ */
+export function apiBaseUrl(env = import.meta.env) {
+  if (env.VITE_API_BASE_URL) return env.VITE_API_BASE_URL.replace(/\/+$/, '')
+  if (env.VITE_API_HOST) return `https://${env.VITE_API_HOST.replace(/^https?:\/\//, '').replace(/\/+$/, '')}/api/v1`
+  return '/api/v1'
+}
+
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  baseURL: apiBaseUrl(),
   timeout: 20000,
 })
 

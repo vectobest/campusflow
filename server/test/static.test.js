@@ -41,3 +41,15 @@ describe('serving the built web app', () => {
     assert.match(csp, /frame-ancestors 'none'/);
   });
 });
+
+describe('CORS origin parsing', async () => {
+  const { parseOrigins } = await import('../src/config.js');
+  it('adds https to bare hosts and drops trailing slashes', () => {
+    assert.deepEqual(parseOrigins('campusflow-web.onrender.com, https://a.vercel.app/ ,http://localhost:5173'), [
+      'https://campusflow-web.onrender.com',
+      'https://a.vercel.app',
+      'http://localhost:5173',
+    ]);
+    assert.deepEqual(parseOrigins(''), []);
+  });
+});

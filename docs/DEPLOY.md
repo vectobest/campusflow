@@ -1,42 +1,51 @@
 # Deploying CampusFlow
 
-Production is **one Render web service** (the Node API that also serves the built web app over HTTPS) plus a **free MongoDB Atlas** database. The Python analysis runs from your laptop against the same database.
+The **backend** and **frontend** are deployed as two separate services, plus a **free MongoDB Atlas** database. The Python analysis runs from your laptop against the same database.
 
 ```
-Phones ──HTTPS──► Render: campusflow (Express API + web app) ──► MongoDB Atlas (Mumbai)
-                                                                    ▲
-Your laptop: npm run analyze  ──────────────────────────────────────┘
+Phones ──HTTPS──► campusflow-web (static React site) ──HTTPS + CORS──► campusflow-api (Express) ──► MongoDB Atlas
+                                                                                                     ▲
+Your laptop: npm run analyze ─────────────────────────────────────────────────────────────────────────┘
 ```
 
-Both services have free tiers. You need a GitHub account (repository pushed), a MongoDB Atlas account and a Render account.
+| Service | What | Knows about the other through |
+|---|---|---|
+| `campusflow-api` | Node/Express API on Render | `CORS_ORIGINS` = the frontend's host. Only that site may call it from a browser. |
+| `campusflow-web` | Static build of `client/` on Render (or Vercel) | `VITE_API_HOST` / `VITE_API_BASE_URL` = the API's address, baked in at build time |
 
-## 1. Database: MongoDB Atlas (≈5 min)
+Both are wired automatically by [render.yaml](../render.yaml).
 
-1. Sign up at https://www.mongodb.com/cloud/atlas and create a **free M0** cluster. Provider AWS, region **Mumbai (ap-south-1)**.
-2. **Database Access** → Add user, e.g. `campusflow`, with a generated password. Role: *Read and write to any database*.
-3. **Network Access** → Add IP address → **Allow access from anywhere** (`0.0.0.0/0`). Render's free tier has no fixed IP; the strong password protects the database.
-4. **Connect → Drivers** → copy the connection string and add the database name `campusflow` before the `?`:
+## 1. Database: MongoDB Atlas
+
+1. Create a **free M0** cluster (AWS, **Mumbai**).
+2. **Database Access**: add a user with a strong generated password.
+3. **Network Access**: **Allow access from anywhere** (`0.0.0.0/0`). Render's free tier has no fixed IP.
+4. **Connect → Drivers**: copy the string, replace `<db_password>` (remove the `<` `>` too), and add the database name before the `?`:
    ```
-   mongodb+srv://campusflow:<password>@cluster0.xxxxx.mongodb.net/campusflow?retryWrites=true&w=majority
+   mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/campusflow?retryWrites=true&w=majority
    ```
+5. Test it from your laptop: put it in `server/.env` as `MONGODB_URI=…` (git-ignored), then run `npm run db:check -w server`.
 
-## 2. App: Render (≈5 min)
+## 2. Deploy both services on Render (one blueprint)
 
-1. Sign up at https://render.com with **"Sign in with GitHub"**.
-2. Open **https://render.com/deploy?repo=https://github.com/vectobest/campusflow** (or the README's *Deploy to Render* button, or **New → Blueprint** → the repository). Render reads [render.yaml](../render.yaml).
-3. Fill in the values it asks for:
+1. Open **https://render.com/deploy?repo=https://github.com/vectobest/campusflow** and sign in with GitHub.
+2. Render shows two services, **campusflow-api** and **campusflow-web**. Fill in:
    | Key | Value |
    |---|---|
    | `MONGODB_URI` | the Atlas string from step 1 |
    | `STUDY_CONTACT` | your name and email (shown on the consent form) |
    | `ETHICS_APPROVAL_REF` | your approval reference, or "pending" |
-   `JWT_SECRET` is generated automatically.
-4. **Apply**. The first build takes a few minutes. Your app is then live at `https://campusflow-xxxx.onrender.com`, with HTTPS already on, so phone GPS works.
-5. Check `https://<your-app>.onrender.com/api/v1/health` returns `"db":"connected"`.
+3. **Apply**. Render builds the API, then the website with the API's address built in. You get two HTTPS links:
+   - `https://campusflow-web-xxxx.onrender.com`: **share this one** with students.
+   - `https://campusflow-api-xxxx.onrender.com/api/v1/health`: should show `"db":"connected"`.
 
-Every `git push` to `main` redeploys automatically. GitHub Actions ([ci.yml](../.github/workflows/ci.yml)) runs all tests on each push.
+Every push to `main` redeploys both. GitHub Actions runs all tests first.
 
-**Free-tier note:** the service sleeps after 15 minutes without traffic, and the first visit afterwards takes about a minute to wake. Before a collection session or a demo, open the site once. Points collected while the server is waking are queued on the phone and uploaded once it responds.
+### Alternative: frontend on Vercel
+
+Deploy only `campusflow-api` on Render. Then on Vercel, import the repo with **Root Directory = `client`** ([client/vercel.json](../client/vercel.json) handles routing and headers). Set the environment variable `VITE_API_BASE_URL=https://campusflow-api-xxxx.onrender.com/api/v1`. Finally, set the API's `CORS_ORIGINS` on Render to your Vercel URL (e.g. `https://campusflow.vercel.app`).
+
+**Free-tier note:** the API sleeps after 15 minutes idle, and the first request then takes about a minute. Open the site once before a session or demo. Points recorded meanwhile wait on the phone and upload automatically.
 
 ## 3. Make yourself a researcher
 
