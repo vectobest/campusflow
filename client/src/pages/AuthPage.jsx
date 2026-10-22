@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import GoogleSignInButton from '../components/GoogleSignInButton'
+import { Loader2 } from 'lucide-react'
 import { Alert, Button, Card, Field, PageHeader, inputClass } from '../components/ui'
 import { collector } from '../hooks/useCollector'
+import { useServerStatus } from '../hooks/useServerStatus'
 
 export default function AuthPage({ mode }) {
   const { login, register, loginWithGoogle } = useAuth()
@@ -15,6 +17,7 @@ export default function AuthPage({ mode }) {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
   const isRegister = mode === 'register'
+  const server = useServerStatus()
 
   const signIn = async (action) => {
     setBusy(true)
@@ -43,6 +46,19 @@ export default function AuthPage({ mode }) {
           ? 'Your email is used only to sign in. Research data is linked to a separate random identifier.'
           : 'Sign in to contribute or to manage your data.'}
       </PageHeader>
+      {server === 'waking' && (
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand" role="status">
+          <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+          <span>
+            Waking up the server… <span className="text-muted">The free hosting plan sleeps when idle, so the first visit can take up to a minute.</span>
+          </span>
+        </div>
+      )}
+      {server === 'down' && (
+        <div className="mb-4">
+          <Alert tone="rec" title="The server is not responding">Please check your connection and reload the page in a minute.</Alert>
+        </div>
+      )}
       <Card>
         <GoogleSignInButton text={isRegister ? 'signup_with' : 'signin_with'} onCredential={(credential) => signIn(() => loginWithGoogle(credential))} />
         <form onSubmit={submit} className="space-y-4">

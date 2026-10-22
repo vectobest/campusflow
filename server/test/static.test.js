@@ -52,6 +52,14 @@ describe('CORS origin parsing', async () => {
     ]);
     assert.deepEqual(parseOrigins(''), []);
   });
+  it('turns * into a single-label wildcard for preview deployments', () => {
+    const [re] = parseOrigins('https://campusflow-*-vectobests-projects.vercel.app');
+    assert.ok(re instanceof RegExp);
+    assert.ok(re.test('https://campusflow-o7mwzf3c3-vectobests-projects.vercel.app'));
+    assert.ok(!re.test('https://campusflow-x-vectobests-projects.vercel.app.evil.com'));
+    assert.ok(!re.test('https://evil.com/campusflow-x-vectobests-projects.vercel.app'));
+    assert.ok(!re.test('https://campusflow-a.b-vectobests-projects.vercel.app'));
+  });
 });
 
 describe('without a database connection', () => {

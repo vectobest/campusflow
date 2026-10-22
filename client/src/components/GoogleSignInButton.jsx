@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { api } from '../api/client'
+import { api, withRetry } from '../api/client'
 
 const GSI_SRC = 'https://accounts.google.com/gsi/client'
 let gsiPromise = null
@@ -36,7 +36,7 @@ export default function GoogleSignInButton({ onCredential, text = 'continue_with
     let cancelled = false
     ;(async () => {
       try {
-        const { data } = await api.authConfig()
+        const { data } = await withRetry(() => api.authConfig())
         if (!data.googleClientId) return !cancelled && setState('unavailable')
         const google = await loadGsi()
         if (cancelled || !ref.current) return

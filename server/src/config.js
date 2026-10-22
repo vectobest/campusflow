@@ -31,14 +31,21 @@ function parseBbox(raw) {
 /**
  * Allowed browser origins for the API, comma-separated. Bare hostnames get
  * https:// (Render passes the frontend's host without a scheme); trailing
- * slashes are removed because browsers never send them in Origin.
+ * slashes are removed because browsers never send them in Origin. A `*` matches
+ * one hostname label segment, e.g. `https://campusflow-*-team.vercel.app` for
+ * Vercel's per-deployment addresses; such entries become anchored RegExps.
  */
 export function parseOrigins(raw) {
   return (raw || '')
     .split(',')
     .map((s) => s.trim().replace(/\/+$/, ''))
     .filter(Boolean)
-    .map((s) => (s.includes('://') ? s : `https://${s}`));
+    .map((s) => (s.includes('://') ? s : `https://${s}`))
+    .map((s) => {
+      if (!s.includes('*')) return s;
+      const pattern = s.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('[a-z0-9-]+');
+      return new RegExp(`^${pattern}$`);
+    });
 }
 
 const nodeEnv = process.env.NODE_ENV || 'development';
